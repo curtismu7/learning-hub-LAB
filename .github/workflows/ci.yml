@@ -1,0 +1,54 @@
+name: CI
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+  forbidden-strings:
+    # Fails if a tracked file holds a string from the FORBIDDEN_STRINGS repo secret (one per line). Only counts are printed.
+    # With no secret the job fails, so it cannot be skipped.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - env:
+          FORBIDDEN_STRINGS: ${{ secrets.FORBIDDEN_STRINGS }}
+        run: |
+          if [ -z "$FORBIDDEN_STRINGS" ]; then echo "FORBIDDEN_STRINGS secret is not set"; exit 1; fi
+          printf '%s\n' "$FORBIDDEN_STRINGS" > "$RUNNER_TEMP/forbidden-strings.txt"
+          files=$(git ls-files | xargs grep -IlF -f "$RUNNER_TEMP/forbidden-strings.txt" 2>/dev/null | wc -l | tr -d ' ')
+          hist=$(git log -p --all | grep -cF -f "$RUNNER_TEMP/forbidden-strings.txt" || true)
+          echo "files with a hit: $files; history hits: $hist"
+          [ "$files" = "0" ] && [ "$hist" = "0" ]
+      - name: No AI attribution (commits)
+        run: |
+          if git log --format=%B | grep -qiE 'co-authored-by|generated with'; then echo "AI attribution found in a commit message"; exit 1; fi
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks version
+      - name: Scan history
+        run: ./gitleaks detect --source . --redact --no-banner -v

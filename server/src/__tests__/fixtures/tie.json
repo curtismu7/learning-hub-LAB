@@ -1,0 +1,60 @@
+{
+  "schema": "demo-content-pack/1",
+  "id": "tie",
+  "title": "tie",
+  "version": "1.0.0",
+  "demo": {
+    "id": "tie-demo",
+    "name": "alpha demo",
+    "catalog": "C9",
+    "baseUrl": "http://localhost:4999",
+    "tags": [
+      "t"
+    ]
+  },
+  "glossary": [
+    {
+      "id": "zzz",
+      "term": "zebra b",
+      "definition": "zebra"
+    },
+    {
+      "id": "yyy",
+      "term": "zebra a",
+      "definition": "zebra"
+    }
+  ],
+  "sources": [
+    {
+      "id": "src",
+      "title": "RFC 1",
+      "url": "https://example.com/r",
+      "kind": "Spec",
+      "use": "plain text.",
+      "status": "read",
+      "checked": "2026-10-10"
+    }
+  ],
+  "cards": [
+    {
+      "id": "bbb",
+      "label": "zebra d",
+      "description": "zebra",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/z"
+      }
+    },
+    {
+      "id": "aaa",
+      "label": "zebra c",
+      "description": "zebra",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/z"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@learning-hub/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "express": "^4.22.3"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1",
+    "vitest": "^3.2.7"
+  }
+}

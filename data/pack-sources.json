@@ -1,0 +1,17 @@
+{
+  "sources": [
+    { "id": "id-jag", "repo": "id-jag-standalone" },
+    { "id": "hostile-mcp", "repo": "hostile-mcp" },
+    { "id": "mcp-tools", "repo": "mcp-tools" },
+    { "id": "hostile-a2a", "repo": "hostile-a2a" },
+    { "id": "attack-gallery", "repo": "attack-gallery" },
+    { "id": "diagram-studio", "repo": "diagram-studio" },
+    { "id": "intent-par-inspector", "repo": "intent-par-inspector" },
+    { "id": "pingone-mcp-inspector", "repo": "pingone-mcp-inspector" },
+    { "id": "agent-registry-demo", "repo": "agent-registry-demo" },
+    { "id": "mcp-discovery", "repo": "mcp-discovery" },
+    { "id": "token-workbench", "repo": "token-workbench" },
+    { "id": "agent-gateway-inspector", "repo": "agent-gateway-inspector" },
+    { "id": "no-tool-no-promise", "repo": "no-tool-no-promise" }
+  ]
+}

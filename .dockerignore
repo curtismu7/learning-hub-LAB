@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+.env
+.env.*
+.data
+.git
+e2e-output
+docs
+scripts

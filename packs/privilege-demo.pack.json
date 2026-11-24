@@ -1,0 +1,133 @@
+{
+  "schema": "demo-content-pack/1",
+  "id": "privilege",
+  "title": "Privilege policy demo",
+  "version": "0.1.0",
+  "demo": {
+    "id": "privilege-demo",
+    "name": "Privilege demo (Cedar policy enforcement for MCP tool calls)",
+    "catalog": "D1",
+    "baseUrl": "http://localhost:18080",
+    "tags": ["cedar", "mcp", "policy", "approvals"]
+  },
+  "glossary": [
+    {
+      "id": "actor-token",
+      "term": "Actor token (act)",
+      "definition": "A token whose act claim is an object with a sub, for example Dot acting for Mark. The server maps act.sub to context.token.actor and evaluates the call as the unattended action mcp:InvokeUnattended, so rules that limit an agent acting alone apply. A string-valued act is rejected, not guessed at."
+    },
+    {
+      "id": "approvers",
+      "term": "@approvers",
+      "definition": "An annotation on a forbid, for example @approvers(\"priya\"). A denial by that policy becomes a hold for the named people, but only when every forbid that fired names approvers and the same call would be allowed with one approval."
+    },
+    {
+      "id": "cedar",
+      "term": "Cedar",
+      "definition": "The open-source policy language used for the AI Policies in this demo. A policy is a permit or a forbid over a principal, an action and a resource, with optional when and unless conditions on the request context."
+    },
+    {
+      "id": "context",
+      "term": "Context",
+      "definition": "The facts about one request that a Cedar condition can read: context.app (which MCP app), context.args.amount (the one tool argument Cedar sees), context.token.scopes, context.token.client_id, context.token.actor, context.approval_count, and the pinned and observed schema hashes. Free text such as an approval justification never reaches Cedar."
+    },
+    {
+      "id": "default-deny",
+      "term": "Default deny",
+      "definition": "Cedar has no implicit allow: a request that no permit matches is denied. The decision then names the rule default-deny, because there is no deciding policy id to show."
+    },
+    {
+      "id": "forbid",
+      "term": "Forbid",
+      "definition": "A Cedar policy that refuses a request. A matching forbid beats every permit, so a hard limit such as the 10000 cap on book_fare stays a limit however many permits say yes."
+    },
+    {
+      "id": "hold",
+      "term": "Hold",
+      "definition": "The third outcome beside allow and deny. The call does not run and waits for a named approver; approving re-evaluates the call with approval_count 1 and runs the tool at most once. An unanswered hold expires after 10 minutes and counts as a deny."
+    },
+    {
+      "id": "pep",
+      "term": "PEP (policy enforcement point)",
+      "definition": "The server code in front of the tools. Its enforce() function is the only path to a tool: it checks the arguments against the tool schema, asks Cedar for a decision, then runs the tool (allow), refuses (deny) or creates an approval (hold)."
+    },
+    {
+      "id": "permit",
+      "term": "Permit",
+      "definition": "A Cedar policy that allows a request. A permit has no effect when any forbid also matches, and nothing is allowed unless some permit matches."
+    },
+    {
+      "id": "principal",
+      "term": "Principal",
+      "definition": "Who is asking. The verified sub claim becomes the principal User, and the groups claim becomes its parent Groups, so a policy can say principal in Group::\"analysts\". Cedar never sees the JWT itself."
+    },
+    {
+      "id": "rug-pull-pin",
+      "term": "Schema pin (rug pull)",
+      "definition": "Each tool is pinned by a hash of its name, description and schema when it is onboarded. A forbid denies any call when the hash the server advertises now no longer matches the pinned one, so approval is for a specific tool, not a name."
+    }
+  ],
+  "sources": [
+    {
+      "id": "cedar-policy-language",
+      "title": "Cedar policy language",
+      "url": "https://www.cedarpolicy.com/",
+      "kind": "Reference",
+      "use": "Home of the open-source Cedar language, which this demo uses for its policies; cited in the demo's README.",
+      "status": "not-read",
+      "checked": "2026-10-21"
+    }
+  ],
+  "cards": [
+    {
+      "id": "s01-hold",
+      "label": "A booking needs a second pair of eyes",
+      "description": "Dot books a fare over 1000 for Mark. The call is held, Priya approves, and it runs once.",
+      "group": "try-it",
+      "action": { "type": "route", "href": "/approvals" },
+      "terms": ["hold", "approvers", "actor-token", "forbid"],
+      "story": "S01"
+    },
+    {
+      "id": "s04-two-of-three",
+      "label": "Mary gets two of three tools",
+      "description": "Analysts may use Search and Ticketing; nothing permits Payments, so it is denied by default.",
+      "group": "try-it",
+      "action": { "type": "route", "href": "/console" },
+      "terms": ["permit", "default-deny", "principal"],
+      "story": "S04"
+    },
+    {
+      "id": "s05-rug-pull",
+      "label": "The tool list changed overnight",
+      "description": "A tool's description changes under the same name; the schema pin forbids the call.",
+      "group": "concept",
+      "action": { "type": "route", "href": "/learn" },
+      "terms": ["rug-pull-pin", "forbid", "context"],
+      "story": "S05"
+    },
+    {
+      "id": "s23-forbid-beats-permit",
+      "label": "Cedar says no, even though another rule says yes",
+      "description": "A permit lets travel agents book fares; a hard cap of 10000 overrides it.",
+      "group": "concept",
+      "action": { "type": "route", "href": "/policies" },
+      "terms": ["forbid", "permit", "cedar"],
+      "story": "S23"
+    },
+    {
+      "id": "cedar-docs",
+      "label": "Cedar policy language",
+      "description": "The language reference behind the demo's policies.",
+      "group": "reference",
+      "action": { "type": "external", "href": "https://www.cedarpolicy.com/" },
+      "terms": ["cedar", "pep"]
+    }
+  ],
+  "stories": [
+    { "id": "S01", "title": "A booking needs a second pair of eyes", "say": "The agent did not get smarter permissions. A human stayed in the loop for exactly the risky one.", "file": "web/src/data/stories/S01-second-pair-of-eyes.json" },
+    { "id": "S04", "title": "Mary gets 2 of 3 tools", "say": "The agent only gets what Mary is allowed to use, so it cannot be tricked into asking for more.", "file": "web/src/data/stories/S04-two-of-three-tools.json" },
+    { "id": "S05", "title": "The tool list changed overnight", "say": "Approval is for a specific tool, not a name.", "file": "web/src/data/stories/S05-rug-pull.json" },
+    { "id": "S23", "title": "Cedar says no, even though another rule says yes", "say": "A hard limit stays a hard limit, however many rules say yes.", "file": "web/src/data/stories/S23-forbid-beats-permit.json" }
+  ]
+}

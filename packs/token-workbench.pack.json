@@ -1,0 +1,469 @@
+{
+  "schema": "demo-content-pack/1",
+  "id": "token-workbench",
+  "title": "Token Workbench",
+  "version": "0.1.0",
+  "demo": {
+    "id": "token-workbench",
+    "name": "Token Workbench",
+    "catalog": "C2",
+    "baseUrl": "http://localhost:5910",
+    "doctor": "/api/health",
+    "tags": [
+      "oauth",
+      "jwt",
+      "token",
+      "mock-only",
+      "simulation"
+    ]
+  },
+  "glossary": [
+    {
+      "id": "alg-confusion",
+      "term": "Algorithm confusion",
+      "definition": "An attack where the token header chooses the signing algorithm. The attacker signs with HMAC (HS256) using the issuer's public key as the secret, and a validator that lets the header pick the algorithm accepts it. The stub validator allows ES256 only and rejects none and HMAC before looking up any key.",
+      "aliases": [
+        "alg=none"
+      ]
+    },
+    {
+      "id": "audience",
+      "term": "Audience (aud)",
+      "definition": "The claim naming which resource a token is meant for. A resource server must check that its own identifier is in aud, otherwise a token issued for another API works everywhere. The wrong-token tester sends a wrong-audience token and a token meant for a downstream API (RFC 8707 passthrough) and expects 401 invalid_token for both."
+    },
+    {
+      "id": "decode-vs-verify",
+      "term": "Decode is not verify",
+      "definition": "Decoding a JWT only reads its Base64URL parts, and anyone can write any claims. In this app a decode reports the signature as not_verified unless you ask to verify, and then only tokens signed by the app's own stub key are valid; a token from a real issuer cannot be verified because the tool never fetches a real JWKS."
+    },
+    {
+      "id": "dpop",
+      "term": "DPoP",
+      "definition": "Demonstrating Proof of Possession (RFC 9449): the client signs a proof with its own key and the access token is bound to that key's thumbprint in the cnf claim, so a stolen token is useless without the key. In the flow catalog this is a simulation; in the tester, cnf is decoded and explained but not enforced by the stub resource server."
+    },
+    {
+      "id": "fail-closed",
+      "term": "Fail closed",
+      "definition": "When a check cannot be completed, or any check fails, the token is refused. The stub validator names the rule that rejected the token (alg, kid, signature, iss, exp, nbf, aud, actor, scope), and a checker run against an unreachable target marks every rule as error rather than pass."
+    },
+    {
+      "id": "fapi-2-0-unverified",
+      "term": "FAPI 2.0 pack (UNVERIFIED)",
+      "definition": "A simplified reading of the FAPI 2.0 profile written for this demo. It is not a conformance suite and has not been checked against the FAPI 2.0 text line by line. Do not use its result to say a product is or is not FAPI 2.0 compliant."
+    },
+    {
+      "id": "flow-catalog-simulation",
+      "term": "Flow catalog (simulation)",
+      "definition": "Six mechanisms (PKCE, PAR, RAR, DPoP, mTLS, JAR) run as mock flows with and without their protection. Keys and certificates are generated per run, no TLS is performed, and each attack outcome is computed by a small in-memory check (hash compare or signature verify). It illustrates why a protection works; it does not run the real protocols and models no product."
+    },
+    {
+      "id": "inert-text",
+      "term": "Inert text",
+      "definition": "Every string that comes back from a token or a target (claim values, kid, metadata, error text) is treated as data: hidden and control characters are shown as [U+XXXX], sizes are bounded, and the UI renders it as a text node, never as HTML."
+    },
+    {
+      "id": "jar",
+      "term": "JAR",
+      "definition": "JWT-Secured Authorization Request (RFC 9101): the authorization request parameters are signed so the server can tell they were not changed on the way. Shown here as a simulated flow with and without the protection."
+    },
+    {
+      "id": "mock-only",
+      "term": "Mock only",
+      "definition": "The only mode. The authorization-server stubs, the resource server and the issuer all run inside this process on loopback ports 5911-5916. The checker and tester accept loopback http targets only; there is no live mode, no tenant and no network."
+    },
+    {
+      "id": "oauth-profile-checker",
+      "term": "OAuth profile checker",
+      "definition": "Probes an authorization server (one of five bundled stubs, or a loopback server you run) with rule-by-rule requests such as unregistered redirect URI, authorization code without PKCE, password grant and double code redemption, and reports pass or fail with evidence per rule."
+    },
+    {
+      "id": "par",
+      "term": "PAR",
+      "definition": "Pushed Authorization Requests (RFC 9126): the client sends the authorization request directly to the server and the browser carries only a short request_uri, so the parameters cannot be edited in the URL. Shown as a simulated flow with and without the protection."
+    },
+    {
+      "id": "pkce",
+      "term": "PKCE",
+      "definition": "Proof Key for Code Exchange (RFC 7636): the party that starts the flow keeps a one-time code_verifier and sends its S256 hash. A stolen authorization code cannot be redeemed without the verifier. It does not authenticate the client and does not bind the access token."
+    },
+    {
+      "id": "rar",
+      "term": "RAR",
+      "definition": "Rich Authorization Requests (RFC 9396): authorization_details describe exactly what is allowed (type, amount, recipient) instead of a broad scope. The resource server still has to compare each request with them."
+    },
+    {
+      "id": "rfc-9700-pack",
+      "term": "RFC 9700 pack",
+      "definition": "The checker's rules for the OAuth 2.0 Security Best Current Practice. The rule texts are this demo's paraphrase, and only RFC numbers are cited, not section numbers, because the sections were not checked against the RFC text."
+    },
+    {
+      "id": "sender-constrained-token",
+      "term": "Sender-constrained token",
+      "definition": "An access token bound to a key or certificate (cnf with a DPoP key thumbprint or an mTLS certificate thumbprint) so only the holder of that key can use it. The decode view explains the binding; the stub resource server does not enforce it."
+    },
+    {
+      "id": "wrong-token-tester",
+      "term": "Wrong-token tester",
+      "definition": "Sends fifteen tokens, one correct control and fourteen wrong ones, to a stub MCP-style resource server and shows the expected and actual status, the WWW-Authenticate error, the check that rejected it and a lesson for each. If the control fails, every other result is meaningless.",
+      "aliases": [
+        "wrong-token rejection tester"
+      ]
+    },
+    {
+      "id": "www-authenticate",
+      "term": "WWW-Authenticate challenge",
+      "definition": "The header a resource server sends with a 401 or 403. With no token it carries no error code and points to the protected-resource metadata (RFC 9728); with a bad token it carries error=\"invalid_token\"; with a valid token that lacks permission, 403 and error=\"insufficient_scope\" (RFC 6750)."
+    }
+  ],
+  "sources": [],
+  "cards": [
+    {
+      "id": "checker",
+      "label": "OAuth profile checker",
+      "description": "Run the RFC 9700 pack and the UNVERIFIED FAPI 2.0 pack against five stub authorization servers.",
+      "group": "try-it",
+      "terms": [
+        "oauth-profile-checker",
+        "rfc-9700-pack",
+        "fapi-2-0-unverified",
+        "mock-only"
+      ],
+      "story": "S03",
+      "action": {
+        "type": "route",
+        "href": "/"
+      }
+    },
+    {
+      "id": "decode",
+      "label": "Decode and trace a token",
+      "description": "Mint a sample token or paste one, read each claim in plain English, and check the signature against the stub keys.",
+      "group": "try-it",
+      "terms": [
+        "decode-vs-verify",
+        "audience",
+        "sender-constrained-token",
+        "inert-text"
+      ],
+      "story": "S01",
+      "action": {
+        "type": "route",
+        "href": "/"
+      },
+      "wire": {
+        "intro": "Example data, nothing real. A token is not magic: it is three pieces of text joined by dots. Decoding shows you what it claims.",
+        "links": [
+          {
+            "label": "RFC 7519: JSON Web Token",
+            "url": "https://www.rfc-editor.org/rfc/rfc7519"
+          }
+        ],
+        "steps": [
+          {
+            "title": "Decode one access token",
+            "between": "Your browser only",
+            "quiet": "Nothing is sent anywhere. Decoding is just reading the first two parts as text, so it happens on your own machine.",
+            "token": {
+              "label": "An example access token for the billing API",
+              "header": [
+                {
+                  "name": "alg",
+                  "value": "RS256",
+                  "note": "How the signature was made. The receiver checks it with the issuer's public key."
+                },
+                {
+                  "name": "typ",
+                  "value": "at+jwt",
+                  "note": "Says this is an access token written as a JWT."
+                },
+                {
+                  "name": "kid",
+                  "value": "key-1",
+                  "note": "Which of the issuer's keys to check the signature with."
+                }
+              ],
+              "claims": [
+                {
+                  "name": "iss",
+                  "value": "https://auth.example.com",
+                  "note": "Who issued this token. Receivers only trust issuers they know."
+                },
+                {
+                  "name": "sub",
+                  "value": "user-123",
+                  "note": "Who the token is about."
+                },
+                {
+                  "name": "aud",
+                  "value": "https://billing.example.com",
+                  "note": "Who the token is for. A receiver must check this is itself.",
+                  "focus": true
+                },
+                {
+                  "name": "scope",
+                  "value": "invoices:read",
+                  "note": "What the token allows."
+                },
+                {
+                  "name": "client_id",
+                  "value": "client-not-real",
+                  "note": "Which app the token was issued to."
+                },
+                {
+                  "name": "iat",
+                  "value": 1893455700,
+                  "note": "When it was issued (a Unix time)."
+                },
+                {
+                  "name": "exp",
+                  "value": 1893456000,
+                  "note": "When it stops working. Receivers refuse it after this.",
+                  "focus": true
+                },
+                {
+                  "name": "jti",
+                  "value": "tok-0001-not-real",
+                  "note": "A unique id for this token, so a replayed copy can be spotted."
+                },
+                {
+                  "name": "cnf",
+                  "value": {
+                    "jkt": "thumbprint-not-real"
+                  },
+                  "note": "Ties the token to one key (a sender-constrained token). A thief without that key cannot use it.",
+                  "focus": true
+                }
+              ],
+              "signature": "sig-not-real"
+            },
+            "notice": "Anyone can decode a token; that proves nothing. Only checking the signature against the issuer's key proves the contents are genuine and unchanged. Never treat decoded claims as trusted until the signature has been verified.",
+            "jargon": [
+              {
+                "term": "JWT",
+                "meaning": "A token written as three parts joined by dots: header.payload.signature. The header and payload are plain JSON encoded as text, not encrypted; the signature proves they were not changed."
+              },
+              {
+                "term": "Claim",
+                "meaning": "One fact the token states, such as who it is for."
+              },
+              {
+                "term": "Unix time",
+                "meaning": "Seconds since 1 January 1970, how tokens write dates."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "flows",
+      "label": "Token-flow comparison",
+      "description": "PKCE, PAR, RAR, DPoP, mTLS and JAR with and without protection, as a movable diagram with Simulate. A simulation.",
+      "group": "concept",
+      "terms": [
+        "pkce",
+        "par",
+        "rar",
+        "dpop",
+        "jar",
+        "flow-catalog-simulation"
+      ],
+      "story": "S04",
+      "action": {
+        "type": "route",
+        "href": "/"
+      }
+    },
+    {
+      "id": "tester",
+      "label": "Wrong-token tester",
+      "description": "Send fifteen tokens (one correct, fourteen wrong) to the stub resource server and compare expected with actual.",
+      "group": "try-it",
+      "terms": [
+        "wrong-token-tester",
+        "alg-confusion",
+        "audience",
+        "www-authenticate",
+        "fail-closed"
+      ],
+      "story": "S02",
+      "action": {
+        "type": "route",
+        "href": "/"
+      },
+      "wire": {
+        "intro": "Example data, nothing real. When a service refuses a token it should say why in a header called WWW-Authenticate. These are two typical refusals.",
+        "links": [
+          {
+            "label": "RFC 6750: Bearer Token Usage",
+            "url": "https://www.rfc-editor.org/rfc/rfc6750"
+          }
+        ],
+        "steps": [
+          {
+            "title": "1. An expired token",
+            "between": "Client to Billing API",
+            "request": {
+              "line": "GET https://billing.example.com/invoices HTTP/1.1",
+              "headers": [
+                "Host: billing.example.com",
+                "Authorization: Bearer [the token below]"
+              ]
+            },
+            "response": {
+              "line": "HTTP/1.1 401 Unauthorized",
+              "headers": [
+                "WWW-Authenticate: Bearer error=\"invalid_token\",",
+                "  error_description=\"token expired\""
+              ]
+            },
+            "token": {
+              "label": "The token that was sent",
+              "header": [
+                {
+                  "name": "alg",
+                  "value": "RS256",
+                  "note": "How the signature was made. The receiver checks it with the issuer's public key."
+                },
+                {
+                  "name": "kid",
+                  "value": "key-1",
+                  "note": "Which of the issuer's keys to check the signature with."
+                }
+              ],
+              "claims": [
+                {
+                  "name": "iss",
+                  "value": "https://auth.example.com",
+                  "note": "Who issued this token. Receivers only trust issuers they know."
+                },
+                {
+                  "name": "aud",
+                  "value": "https://billing.example.com",
+                  "note": "Correct audience, so this is not the problem."
+                },
+                {
+                  "name": "exp",
+                  "value": 1700000000,
+                  "note": "This time is in the past, so the token is dead. This is the problem.",
+                  "focus": true
+                }
+              ],
+              "signature": "sig-not-real"
+            },
+            "notice": "Expiry limits how long a stolen token is useful. The service checks exp on every call, not just at sign-in.",
+            "jargon": [
+              {
+                "term": "WWW-Authenticate",
+                "meaning": "A response header explaining how the client should authenticate, and why it failed this time."
+              },
+              {
+                "term": "Bearer token",
+                "meaning": "A pass that works for whoever holds it, like a cinema ticket. Anyone who copies it can use it."
+              }
+            ]
+          },
+          {
+            "title": "2. A token that is valid but not allowed enough",
+            "between": "Client to Billing API",
+            "request": {
+              "line": "POST https://billing.example.com/invoices HTTP/1.1",
+              "headers": [
+                "Host: billing.example.com",
+                "Authorization: Bearer [the token below]",
+                "Content-Type: application/json"
+              ],
+              "body": "{\"customer\": \"cust-1\", \"total\": 50}"
+            },
+            "response": {
+              "line": "HTTP/1.1 403 Forbidden",
+              "headers": [
+                "WWW-Authenticate: Bearer error=\"insufficient_scope\",",
+                "  scope=\"invoices:write\""
+              ]
+            },
+            "token": {
+              "label": "The token that was sent",
+              "header": [
+                {
+                  "name": "alg",
+                  "value": "RS256",
+                  "note": "How the signature was made. The receiver checks it with the issuer's public key."
+                },
+                {
+                  "name": "kid",
+                  "value": "key-1",
+                  "note": "Which of the issuer's keys to check the signature with."
+                }
+              ],
+              "claims": [
+                {
+                  "name": "iss",
+                  "value": "https://auth.example.com",
+                  "note": "Who issued this token. Receivers only trust issuers they know."
+                },
+                {
+                  "name": "aud",
+                  "value": "https://billing.example.com",
+                  "note": "Correct audience."
+                },
+                {
+                  "name": "scope",
+                  "value": "invoices:read",
+                  "note": "Read only. Creating an invoice needs invoices:write, so this is the problem.",
+                  "focus": true
+                },
+                {
+                  "name": "exp",
+                  "value": 1893456000,
+                  "note": "Still valid."
+                }
+              ],
+              "signature": "sig-not-real"
+            },
+            "notice": "401 means we do not accept who you are; 403 means we do, but you may not do this. Scope is what turns a read-only token away from a write.",
+            "jargon": [
+              {
+                "term": "scope",
+                "meaning": "The list of things a token allows, such as invoices:read."
+              },
+              {
+                "term": "403 Forbidden",
+                "meaning": "The server knows who you are and refuses the action anyway."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "flows",
+      "label": "Token-flow comparison",
+      "href": "/"
+    }
+  ],
+  "stories": [
+    {
+      "id": "S01",
+      "title": "Read",
+      "say": "A token is only text. Decoding shows what it says, offline. Anyone can write any claims, so nothing is trusted until the signature is checked."
+    },
+    {
+      "id": "S02",
+      "title": "Break",
+      "say": "Fifteen wrong tokens are sent to a stub resource server. A correct one refuses each for the right reason, with the right error."
+    },
+    {
+      "id": "S03",
+      "title": "Check",
+      "say": "Five stub authorization servers are probed against OAuth security rules. The FAPI 2.0 pack is UNVERIFIED."
+    },
+    {
+      "id": "S04",
+      "title": "Compare",
+      "say": "PKCE, PAR, RAR, DPoP, mTLS and JAR each stop one attack. This is a simulation of the mechanisms, not of any product."
+    }
+  ]
+}

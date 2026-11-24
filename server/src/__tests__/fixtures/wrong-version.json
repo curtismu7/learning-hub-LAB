@@ -1,0 +1,72 @@
+{
+  "schema": "demo-content-pack/2",
+  "id": "delta",
+  "title": "DELTA demo",
+  "version": "1.0.0",
+  "demo": {
+    "id": "delta-demo",
+    "name": "delta demo",
+    "catalog": "C9",
+    "baseUrl": "http://localhost:4999",
+    "tags": [
+      "t"
+    ]
+  },
+  "glossary": [
+    {
+      "id": "dpop",
+      "term": "DPoP",
+      "definition": "Demonstrating Proof of Possession binds an access token to a key. Clients prove possession on every request.",
+      "aliases": [
+        "proof of possession"
+      ]
+    },
+    {
+      "id": "jti",
+      "term": "jti replay",
+      "definition": "A token identifier that servers remember so a captured assertion cannot be exchanged twice."
+    }
+  ],
+  "sources": [
+    {
+      "id": "rfc9449",
+      "title": "RFC 9449 DPoP",
+      "url": "https://www.rfc-editor.org/rfc/rfc9449",
+      "kind": "Spec",
+      "use": "Defines DPoP proofs.",
+      "status": "read",
+      "checked": "2026-10-10"
+    }
+  ],
+  "cards": [
+    {
+      "id": "try",
+      "label": "Try DPoP",
+      "description": "Run the DPoP demo and watch the proof header.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/dpop"
+      },
+      "terms": [
+        "dpop"
+      ],
+      "story": "S01"
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "flow",
+      "label": "DPoP flow",
+      "href": "/diagram/dpop",
+      "mode": "dpop"
+    }
+  ],
+  "stories": [
+    {
+      "id": "S01",
+      "title": "Ana proves possession",
+      "say": "The token is useless without the key."
+    }
+  ]
+}

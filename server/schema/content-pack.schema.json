@@ -1,0 +1,477 @@
+{
+  "$comment": "Copied from the Learning Hub research (AI-DEMO2 planning/standalone-research/content-pack/content-pack.schema.json, 2026-10-20). This copy is the one the kit validates against; edit it here, and keep other demo repos in step.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/demo-kit/content-pack.schema.json",
+  "title": "Demo content pack",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "title",
+    "version",
+    "demo",
+    "glossary",
+    "sources",
+    "cards"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "demo-content-pack/1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,40}$",
+      "description": "Repo-unique slug, also the namespace for term/card ids."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "commit"
+      ],
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "generated": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "demo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "catalog"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "catalog": {
+          "type": "string",
+          "pattern": "^[A-Z][0-9]+$",
+          "description": "Family-plan catalog id, e.g. C1."
+        },
+        "baseUrl": {
+          "type": "string",
+          "description": "Default local URL; the launcher may override it. Never a tenant URL."
+        },
+        "doctor": {
+          "type": "string",
+          "description": "Path relative to baseUrl that returns the doctor JSON (see shelf status contract)."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "glossary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "term",
+          "definition"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "term": {
+            "type": "string"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "url",
+          "kind",
+          "use",
+          "status",
+          "checked"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "use": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "read",
+              "search-only",
+              "not-read"
+            ]
+          },
+          "checked": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "group",
+          "action"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "group": {
+            "enum": [
+              "setup",
+              "try-it",
+              "concept",
+              "reference"
+            ]
+          },
+          "action": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "href"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "route",
+                  "external"
+                ]
+              },
+              "href": {
+                "type": "string"
+              }
+            }
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "glossary ids this card teaches"
+          },
+          "story": {
+            "type": "string",
+            "description": "story id; must exist in stories[]"
+          },
+          "wire": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "intro",
+              "steps"
+            ],
+            "description": "Optional 'On the wire' block: example messages for the lesson. All values are fake (example hosts, sig-not-real signatures).",
+            "properties": {
+              "intro": {
+                "type": "string"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "label",
+                    "url"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "steps": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "title",
+                    "notice"
+                  ],
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "between": {
+                      "type": "string",
+                      "description": "Who talks to whom, e.g. 'Agent app to Auth server'."
+                    },
+                    "quiet": {
+                      "type": "string",
+                      "description": "Required when the step has no request and no response: says plainly that no traffic happens."
+                    },
+                    "request": {
+                      "$ref": "#/$defs/wireMessage"
+                    },
+                    "response": {
+                      "$ref": "#/$defs/wireMessage"
+                    },
+                    "token": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "label",
+                        "header",
+                        "claims",
+                        "signature"
+                      ],
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "header": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/wireClaim"
+                          }
+                        },
+                        "claims": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/wireClaim"
+                          }
+                        },
+                        "signature": {
+                          "const": "sig-not-real"
+                        }
+                      }
+                    },
+                    "notice": {
+                      "type": "string",
+                      "description": "'What to notice': what this protects against."
+                    },
+                    "jargon": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "term",
+                          "meaning"
+                        ],
+                        "properties": {
+                          "term": {
+                            "type": "string"
+                          },
+                          "meaning": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "diagrams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "href"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^S[0-9]{2}$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "say": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string",
+            "description": "path of stories/<id>.json in the demo repo; the pack carries only the pointer and the one-line takeaway"
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "description": "Optional RAG corpus: markdown/text files shipped with the pack, indexed by the Hub. Each is a path inside the pack zip.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "path",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "wireClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value",
+        "note"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "description": "Any JSON value; shown as text and encoded into the example token."
+        },
+        "note": {
+          "type": "string",
+          "description": "Plain-language 'what this means'."
+        },
+        "focus": {
+          "type": "boolean",
+          "description": "Highlight this row: it is the claim the step is about."
+        }
+      }
+    },
+    "wireMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line"
+      ],
+      "properties": {
+        "line": {
+          "type": "string",
+          "description": "Request line (METHOD url) or status line (HTTP/1.1 200 OK)."
+        },
+        "headers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

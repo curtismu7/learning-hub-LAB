@@ -1,0 +1,57 @@
+{
+  "schema": "demo-content-pack/1",
+  "id": "gamma",
+  "title": "GAMMA demo",
+  "version": "1.0.0",
+  "demo": {
+    "id": "gamma-demo",
+    "name": "gamma demo",
+    "catalog": "C9",
+    "baseUrl": "http://localhost:4999",
+    "tags": [
+      "t"
+    ]
+  },
+  "sources": [
+    {
+      "id": "rfc9449",
+      "title": "RFC 9449 DPoP",
+      "url": "https://www.rfc-editor.org/rfc/rfc9449",
+      "kind": "Spec",
+      "use": "Defines DPoP proofs.",
+      "status": "read",
+      "checked": "2026-10-10"
+    }
+  ],
+  "cards": [
+    {
+      "id": "try",
+      "label": "Try DPoP",
+      "description": "Run the DPoP demo and watch the proof header.",
+      "group": "try-it",
+      "action": {
+        "type": "route",
+        "href": "/dpop"
+      },
+      "terms": [
+        "dpop"
+      ],
+      "story": "S01"
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "flow",
+      "label": "DPoP flow",
+      "href": "/diagram/dpop",
+      "mode": "dpop"
+    }
+  ],
+  "stories": [
+    {
+      "id": "S01",
+      "title": "Ana proves possession",
+      "say": "The token is useless without the key."
+    }
+  ]
+}

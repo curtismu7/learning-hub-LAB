@@ -1,0 +1,60 @@
+{
+  "packs": [
+    {
+      "id": "id-jag",
+      "source": "packs/id-jag.pack.json"
+    },
+    {
+      "id": "privilege",
+      "source": "packs/privilege-demo.pack.json"
+    },
+    {
+      "id": "hostile-mcp",
+      "source": "packs/hostile-mcp.pack.json"
+    },
+    {
+      "id": "mcp-tools",
+      "source": "packs/mcp-tools.pack.json"
+    },
+    {
+      "id": "hostile-a2a",
+      "source": "packs/hostile-a2a.pack.json"
+    },
+    {
+      "id": "attack-gallery",
+      "source": "packs/attack-gallery.pack.json"
+    },
+    {
+      "id": "diagram-studio",
+      "source": "packs/diagram-studio.pack.json"
+    },
+    {
+      "id": "intent-par-inspector",
+      "source": "packs/intent-par-inspector.pack.json"
+    },
+    {
+      "id": "pingone-mcp-inspector",
+      "source": "packs/pingone-mcp-inspector.pack.json"
+    },
+    {
+      "id": "agent-registry-demo",
+      "source": "packs/agent-registry-demo.pack.json"
+    },
+    {
+      "id": "mcp-discovery",
+      "source": "packs/mcp-discovery.pack.json"
+    },
+    {
+      "id": "token-workbench",
+      "source": "packs/token-workbench.pack.json"
+    },
+    {
+      "id": "agent-gateway-inspector",
+      "source": "packs/agent-gateway-inspector.pack.json"
+    },
+    {
+      "id": "no-tool-no-promise",
+      "source": "packs/no-tool-no-promise.pack.json"
+    }
+  ]
+}
